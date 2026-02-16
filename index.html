@@ -49,24 +49,6 @@
             color: transparent;
             letter-spacing: -0.5px;
         }
-        .admin-link {
-            background: #ffffffd6;
-            padding: 12px 28px;
-            border-radius: 60px;
-            color: #4a3729;
-            text-decoration: none;
-            font-weight: 500;
-            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
-            border: 1px solid #e2d9d0;
-            transition: 0.2s;
-            font-size: 1.1rem;
-            backdrop-filter: blur(4px);
-        }
-        .admin-link:hover {
-            background: white;
-            box-shadow: 0 12px 24px rgba(100,70,40,0.15);
-            border-color: #b3967a;
-        }
         .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -324,10 +306,6 @@
             text-decoration: none;
             border-bottom: 2px dotted;
         }
-        .currency {
-            font-size: 1.2rem;
-            margin-left: 5px;
-        }
         .button-group {
             display: flex;
             gap: 20px;
@@ -343,7 +321,7 @@
     </div>
     <script>
         (function() {
-            // ---------- shared constants ----------
+            // ---------- constants ----------
             const STORAGE_KEY = 'shukri_products';
             const WHATSAPP_NUMBER = '252614837293';
             const ADMIN_PASSWORD = 'iphone326355';
@@ -353,7 +331,6 @@
                 { id: 3, name: 'Foox (بخور)', price: 18.50, discount: 15, image: '' }
             ];
 
-            // ---------- helper: load/save products ----------
             function loadProducts() {
                 const stored = localStorage.getItem(STORAGE_KEY);
                 if (stored) {
@@ -372,18 +349,17 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
             }
 
-            // ---------- determine if admin mode ----------
+            // ---------- detect admin mode ----------
             const urlParams = new URLSearchParams(window.location.search);
-            const isAdmin = urlParams.has('admin'); // true if ?admin or ?admin=1 or ?admin=true
+            let isAdmin = urlParams.has('admin'); // true if ?admin or ?admin=1 etc.
 
-            // ---------- password protection for admin ----------
+            // If admin mode, prompt for password
             if (isAdmin) {
                 const userPwd = prompt("Fadlan geli password-ka maamulka:");
                 if (userPwd !== ADMIN_PASSWORD) {
                     alert("Password khaldan! Lagugu celin store-ka.");
-                    // remove admin param and reload
-                    const newUrl = window.location.pathname;
-                    window.location.href = newUrl;
+                    // redirect to clean URL (remove query)
+                    window.location.href = window.location.pathname;
                 }
             }
 
@@ -392,10 +368,10 @@
                 const container = document.getElementById('mainContainer');
                 if (!container) return;
 
+                // No admin link displayed anymore
                 let html = `
                     <header>
                         <h1>🛍️ SHUKRI ONLINE STORE</h1>
-                        <a class="admin-link" href="?admin=1">👤 Maamul</a>
                     </header>
                     <div class="product-grid" id="productGrid"></div>
                     <div class="total-section">
@@ -503,7 +479,6 @@
                 const formDiv = document.getElementById('adminForm');
                 renderProductEditors(products, formDiv);
 
-                // Add new product button
                 document.getElementById('addProductBtn').addEventListener('click', () => {
                     const newId = Date.now();
                     const newProduct = {
@@ -516,7 +491,6 @@
                     appendProductEditor(newProduct, formDiv);
                 });
 
-                // Save all
                 document.getElementById('saveAdminBtn').addEventListener('click', () => {
                     const editors = document.querySelectorAll('.product-editor');
                     const updatedProducts = [];
@@ -530,10 +504,8 @@
                         const oldImage = editor.dataset.oldImage || '';
                         let finalImage = previewImg.src;
                         if (fileInput.files.length === 0) {
-                            // no new file: use old image if available
                             if (oldImage) finalImage = oldImage;
                         }
-                        // if finalImage is external placeholder, set to empty
                         if (finalImage.startsWith('http') && !finalImage.startsWith('data:')) {
                             finalImage = '';
                         }
@@ -607,13 +579,24 @@
             // ---------- INITIALIZE ----------
             const products = loadProducts();
             if (isAdmin) {
-                // password check passed (otherwise we would have redirected)
                 renderAdmin(products);
             } else {
                 renderStorefront(products);
             }
 
-            // Handle popstate (back/forward) - but password check won't re-run, we can ignore for simplicity
+            // Handle back/forward (optional)
+            window.addEventListener('popstate', () => {
+                // re-run detection (but password won't be prompted again, so we just reload based on URL)
+                const newParams = new URLSearchParams(window.location.search);
+                const newIsAdmin = newParams.has('admin');
+                if (newIsAdmin) {
+                    // we need to prompt again? but we can't because this is a popstate event.
+                    // simpler: reload the page to trigger password prompt.
+                    window.location.reload();
+                } else {
+                    renderStorefront(loadProducts());
+                }
+            });
         })();
     </script>
     <!-- small extra style -->
