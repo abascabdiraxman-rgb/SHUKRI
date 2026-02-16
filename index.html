@@ -322,6 +322,14 @@
             font-size: 1.2rem;
             margin: 30px 0 10px;
         }
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 30px;
+            margin: 10px 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -340,15 +348,19 @@
                 { id: 3, name: 'Foox (بخور)', price: 18.50, discount: 15, image: '' }
             ];
 
+            // Load products: if no stored data, set defaults; if stored empty array, return empty.
             function loadProducts() {
                 const stored = localStorage.getItem(STORAGE_KEY);
-                if (stored) {
+                if (stored !== null) {
                     try {
                         return JSON.parse(stored);
                     } catch (e) {
+                        // If corrupted, reset to defaults
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
                         return DEFAULT_PRODUCTS;
                     }
                 } else {
+                    // First visit: set defaults
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
                     return DEFAULT_PRODUCTS;
                 }
@@ -356,6 +368,8 @@
 
             function saveProducts(products) {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+                // Verify save
+                console.log('Saved:', products);
             }
 
             // ---------- detect admin mode ----------
@@ -392,29 +406,33 @@
                 container.innerHTML = html;
 
                 const grid = document.getElementById('productGrid');
-                products.forEach(prod => {
-                    const finalPrice = prod.discount > 0 ? (prod.price * (1 - prod.discount/100)).toFixed(2) : prod.price.toFixed(2);
-                    const card = document.createElement('div');
-                    card.className = 'product-card';
-                    card.dataset.id = prod.id;
-                    card.dataset.price = finalPrice;
-                    card.dataset.name = prod.name;
-                    card.innerHTML = `
-                        <img class="product-image" src="${prod.image || 'https://via.placeholder.com/300x300/f7ede4/9b7f69?text=Sawir+ma+jirto'}" alt="${prod.name}">
-                        <div class="product-name">${prod.name}</div>
-                        <div class="price-block">
-                            ${prod.discount > 0 ? `<span class="original-price">$${prod.price.toFixed(2)}</span>` : ''}
-                            <span class="discounted-price">$${finalPrice}</span>
-                            ${prod.discount > 0 ? `<span class="discount-badge">-${prod.discount}%</span>` : ''}
-                        </div>
-                        <div class="quantity-control">
-                            <button class="quantity-btn" data-action="decr">−</button>
-                            <input type="number" class="quantity-input" value="0" min="0" max="99" step="1" data-id="${prod.id}">
-                            <button class="quantity-btn" data-action="incr">+</button>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
+                if (products.length === 0) {
+                    grid.innerHTML = '<p style="text-align:center; font-size:1.5rem; color:#8b6c51;">Wax alaab ah hadda ma jirto</p>';
+                } else {
+                    products.forEach(prod => {
+                        const finalPrice = prod.discount > 0 ? (prod.price * (1 - prod.discount/100)).toFixed(2) : prod.price.toFixed(2);
+                        const card = document.createElement('div');
+                        card.className = 'product-card';
+                        card.dataset.id = prod.id;
+                        card.dataset.price = finalPrice;
+                        card.dataset.name = prod.name;
+                        card.innerHTML = `
+                            <img class="product-image" src="${prod.image || 'https://via.placeholder.com/300x300/f7ede4/9b7f69?text=Sawir+ma+jirto'}" alt="${prod.name}">
+                            <div class="product-name">${prod.name}</div>
+                            <div class="price-block">
+                                ${prod.discount > 0 ? `<span class="original-price">$${prod.price.toFixed(2)}</span>` : ''}
+                                <span class="discounted-price">$${finalPrice}</span>
+                                ${prod.discount > 0 ? `<span class="discount-badge">-${prod.discount}%</span>` : ''}
+                            </div>
+                            <div class="quantity-control">
+                                <button class="quantity-btn" data-action="decr">−</button>
+                                <input type="number" class="quantity-input" value="0" min="0" max="99" step="1" data-id="${prod.id}">
+                                <button class="quantity-btn" data-action="incr">+</button>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                }
 
                 // Attach quantity events
                 document.querySelectorAll('.quantity-btn').forEach(btn => {
@@ -511,8 +529,12 @@
                         const oldImage = editor.dataset.oldImage || '';
                         let finalImage = previewImg.src;
                         if (fileInput.files.length === 0) {
+                            // No new file: keep old image
                             if (oldImage) finalImage = oldImage;
+                        } else {
+                            // New file selected: preview already updated to dataURL, we keep that
                         }
+                        // If finalImage is external placeholder (http), set to empty to avoid storing URL
                         if (finalImage.startsWith('http') && !finalImage.startsWith('data:')) {
                             finalImage = '';
                         }
@@ -525,15 +547,24 @@
                         });
                     });
                     saveProducts(updatedProducts);
-                    alert("✅ Alaabta waa la kaydiyay! Ku noqo store-ka.");
+                    // Show success message
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = 'success-msg';
+                    msgDiv.innerText = '✅ Alaabta waa la kaydiyay!';
+                    container.insertBefore(msgDiv, container.querySelector('.button-group').nextSibling);
+                    setTimeout(() => msgDiv.remove(), 3000);
                 });
             }
 
             function renderProductEditors(products, parent) {
-                parent.innerHTML = ''; // Clear first
-                products.forEach(prod => {
-                    appendProductEditor(prod, parent);
-                });
+                parent.innerHTML = '';
+                if (products.length === 0) {
+                    parent.innerHTML = '<p style="text-align:center; font-size:1.3rem; color:#8b6c51;">Wax alaab ah ma jirto. Ku dar cusub.</p>';
+                } else {
+                    products.forEach(prod => {
+                        appendProductEditor(prod, parent);
+                    });
+                }
             }
 
             function appendProductEditor(prod, parent) {
@@ -600,7 +631,7 @@
 
             // Handle back/forward
             window.addEventListener('popstate', () => {
-                window.location.reload(); // simple reload to re-check admin param
+                window.location.reload();
             });
         })();
     </script>
