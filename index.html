@@ -273,7 +273,7 @@
             box-shadow: 0 8px 18px rgba(0,0,0,0.1);
             background: #e7d9cf;
         }
-        .save-btn, .add-btn {
+        .save-btn, .add-btn, .reset-btn {
             background: #8b6c51;
             border: none;
             color: white;
@@ -292,11 +292,17 @@
             margin-top: 10px;
             align-self: center;
         }
+        .reset-btn {
+            background: #a05858;
+        }
         .add-btn:hover {
             background: #4a7057;
         }
         .save-btn:hover {
             background: #6f523b;
+        }
+        .reset-btn:hover {
+            background: #7e4242;
         }
         .back-link {
             display: inline-block;
@@ -348,7 +354,7 @@
                 { id: 3, name: 'Foox (بخور)', price: 18.50, discount: 15, image: '' }
             ];
 
-            // Load products: if no stored data, set defaults; if stored empty array, return empty.
+            // Load products: if stored data exists, return it; if stored is null, set defaults and return them.
             function loadProducts() {
                 const stored = localStorage.getItem(STORAGE_KEY);
                 if (stored !== null) {
@@ -360,7 +366,7 @@
                         return DEFAULT_PRODUCTS;
                     }
                 } else {
-                    // First visit: set defaults
+                    // No stored data at all (first visit)
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
                     return DEFAULT_PRODUCTS;
                 }
@@ -368,8 +374,13 @@
 
             function saveProducts(products) {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-                // Verify save
                 console.log('Saved:', products);
+            }
+
+            // Reset to default products
+            function resetToDefault() {
+                saveProducts(DEFAULT_PRODUCTS);
+                return DEFAULT_PRODUCTS;
             }
 
             // ---------- detect admin mode ----------
@@ -496,6 +507,7 @@
                     <div class="button-group">
                         <button class="add-btn" id="addProductBtn">➕ Ku dar alaab cusub</button>
                         <button class="save-btn" id="saveAdminBtn">💾 Kaydi isbedelada</button>
+                        <button class="reset-btn" id="resetDefaultBtn">🔄 Ku celi alaabtii hore</button>
                     </div>
                     <div class="note">⚠️ Fadlan: markaad tirtirto, isbedeladu waa isla markiiba kaydsamaan. Markaad ku darto ama aad beddesho, guji "Kaydi isbedelada".</div>
                 `;
@@ -553,6 +565,13 @@
                     msgDiv.innerText = '✅ Alaabta waa la kaydiyay!';
                     container.insertBefore(msgDiv, container.querySelector('.button-group').nextSibling);
                     setTimeout(() => msgDiv.remove(), 3000);
+                });
+
+                document.getElementById('resetDefaultBtn').addEventListener('click', () => {
+                    if (confirm("Ma hubtaa inaad ku celiso alaabtii hore? waxaad tirtirtay waa lumi doonaa.")) {
+                        const defaultProducts = resetToDefault();
+                        renderAdmin(defaultProducts);
+                    }
                 });
             }
 
