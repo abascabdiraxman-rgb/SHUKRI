@@ -346,6 +346,7 @@
             // ---------- shared constants ----------
             const STORAGE_KEY = 'shukri_products';
             const WHATSAPP_NUMBER = '252614837293';
+            const ADMIN_PASSWORD = 'iphone326355';
             const DEFAULT_PRODUCTS = [
                 { id: 1, name: 'Qamdi (جلباب)', price: 45.00, discount: 20, image: '' },
                 { id: 2, name: 'Macawiis (معويس)', price: 30.00, discount: 0, image: '' },
@@ -371,8 +372,20 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
             }
 
-            // ---------- determine if admin mode (any parameter containing admin) ----------
-            const isAdmin = window.location.pathname.includes('admin.html') || window.location.search.includes('admin');
+            // ---------- determine if admin mode ----------
+            const urlParams = new URLSearchParams(window.location.search);
+            const isAdmin = urlParams.has('admin'); // true if ?admin or ?admin=1 or ?admin=true
+
+            // ---------- password protection for admin ----------
+            if (isAdmin) {
+                const userPwd = prompt("Fadlan geli password-ka maamulka:");
+                if (userPwd !== ADMIN_PASSWORD) {
+                    alert("Password khaldan! Lagugu celin store-ka.");
+                    // remove admin param and reload
+                    const newUrl = window.location.pathname;
+                    window.location.href = newUrl;
+                }
+            }
 
             // ---------- RENDER STOREFRONT ----------
             function renderStorefront(products) {
@@ -382,7 +395,7 @@
                 let html = `
                     <header>
                         <h1>🛍️ SHUKRI ONLINE STORE</h1>
-                        <a class="admin-link" href="?admin=1" onclick="event.preventDefault(); window.location.href=window.location.pathname + '?admin=1'">👤 Maamul</a>
+                        <a class="admin-link" href="?admin=1">👤 Maamul</a>
                     </header>
                     <div class="product-grid" id="productGrid"></div>
                     <div class="total-section">
@@ -492,7 +505,6 @@
 
                 // Add new product button
                 document.getElementById('addProductBtn').addEventListener('click', () => {
-                    // Generate a temporary unique ID (timestamp)
                     const newId = Date.now();
                     const newProduct = {
                         id: newId,
@@ -501,7 +513,6 @@
                         discount: 0,
                         image: ''
                     };
-                    // Add editor to DOM
                     appendProductEditor(newProduct, formDiv);
                 });
 
@@ -516,26 +527,13 @@
                         const discount = parseInt(editor.querySelector('.prod-discount').value) || 0;
                         const previewImg = editor.querySelector('.image-preview');
                         const fileInput = editor.querySelector('.prod-image-file');
-                        let image = previewImg.src;
-
-                        // If no new file uploaded, we keep the existing image from the editor's preview.
-                        // But the preview might be a placeholder. We need to distinguish.
-                        // If image starts with http (placeholder) and there was an old image, we should keep old.
-                        // However the preview for a new product could be placeholder. We'll handle by checking if it's a placeholder.
-                        // Simpler: if fileInput.files.length === 0 and previewImg.src includes('placeholder') we set image = '' (to avoid storing external url)
-                        // But we want to keep existing image if it's a base64 from previous save.
-                        // We'll trust that preview.src holds the correct image (base64 or placeholder). If placeholder and there was old image, we lose it.
-                        // To avoid that, we can store the old image from products array if the preview is placeholder and no new file.
-                        // We'll do: if fileInput.files.length === 0 && previewImg.src.startsWith('http') then we keep old image from original products (but we don't have original list now)
-                        // Instead, we'll store the old image in a data attribute when rendering.
-                        // Let's implement that: each editor will have a data-old-image attribute containing the previous image (from loaded products). On save, if no new file, we use that old image.
                         const oldImage = editor.dataset.oldImage || '';
-                        let finalImage = image;
+                        let finalImage = previewImg.src;
                         if (fileInput.files.length === 0) {
-                            // no new file: use old image if available, otherwise keep whatever is in preview (maybe placeholder)
+                            // no new file: use old image if available
                             if (oldImage) finalImage = oldImage;
                         }
-                        // if finalImage is placeholder (http), set to empty string to avoid storing external link
+                        // if finalImage is external placeholder, set to empty
                         if (finalImage.startsWith('http') && !finalImage.startsWith('data:')) {
                             finalImage = '';
                         }
@@ -562,7 +560,7 @@
                 const editor = document.createElement('div');
                 editor.className = 'product-editor';
                 editor.dataset.id = prod.id;
-                editor.dataset.oldImage = prod.image || '';  // store original image for later
+                editor.dataset.oldImage = prod.image || '';
                 editor.innerHTML = `
                     <button class="delete-product" title="Tirtir alaabta">🗑️ Tirtir</button>
                     <div class="editor-title">📦 ${prod.name.substring(0,20)} (ID: ${prod.id})</div>
@@ -586,14 +584,12 @@
                 `;
                 parent.appendChild(editor);
 
-                // Delete button functionality
                 editor.querySelector('.delete-product').addEventListener('click', () => {
                     if (confirm("Ma hubtaa inaad tirtirto alaabtan?")) {
                         editor.remove();
                     }
                 });
 
-                // Image preview on file select
                 const fileInput = editor.querySelector('.prod-image-file');
                 const previewImg = editor.querySelector('.image-preview');
                 fileInput.addEventListener('change', function(event) {
@@ -611,20 +607,16 @@
             // ---------- INITIALIZE ----------
             const products = loadProducts();
             if (isAdmin) {
+                // password check passed (otherwise we would have redirected)
                 renderAdmin(products);
             } else {
                 renderStorefront(products);
             }
 
-            // Optional: handle popstate for back/forward
-            window.addEventListener('popstate', () => {
-                const nowAdmin = window.location.pathname.includes('admin.html') || window.location.search.includes('admin');
-                if (nowAdmin) renderAdmin(loadProducts());
-                else renderStorefront(loadProducts());
-            });
+            // Handle popstate (back/forward) - but password check won't re-run, we can ignore for simplicity
         })();
     </script>
-    <!-- small extra style for file input and responsiveness -->
+    <!-- small extra style -->
     <style>
         .file-input { background: #fcf7f2; padding: 10px; }
         .product-editor { background: rgba(253, 246, 239, 0.8); }
