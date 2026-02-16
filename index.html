@@ -313,6 +313,15 @@
             justify-content: center;
             margin: 30px 0;
         }
+        .note {
+            background: #f8e4d5;
+            padding: 15px 25px;
+            border-radius: 60px;
+            text-align: center;
+            color: #7b4f2b;
+            font-size: 1.2rem;
+            margin: 30px 0 10px;
+        }
     </style>
 </head>
 <body>
@@ -351,14 +360,12 @@
 
             // ---------- detect admin mode ----------
             const urlParams = new URLSearchParams(window.location.search);
-            let isAdmin = urlParams.has('admin'); // true if ?admin or ?admin=1 etc.
+            let isAdmin = urlParams.has('admin');
 
-            // If admin mode, prompt for password
             if (isAdmin) {
                 const userPwd = prompt("Fadlan geli password-ka maamulka:");
                 if (userPwd !== ADMIN_PASSWORD) {
                     alert("Password khaldan! Lagugu celin store-ka.");
-                    // redirect to clean URL (remove query)
                     window.location.href = window.location.pathname;
                 }
             }
@@ -368,7 +375,6 @@
                 const container = document.getElementById('mainContainer');
                 if (!container) return;
 
-                // No admin link displayed anymore
                 let html = `
                     <header>
                         <h1>🛍️ SHUKRI ONLINE STORE</h1>
@@ -473,6 +479,7 @@
                         <button class="add-btn" id="addProductBtn">➕ Ku dar alaab cusub</button>
                         <button class="save-btn" id="saveAdminBtn">💾 Kaydi isbedelada</button>
                     </div>
+                    <div class="note">⚠️ Fadlan: markaad tirtirto, isbedeladu waa isla markiiba kaydsamaan. Markaad ku darto ama aad beddesho, guji "Kaydi isbedelada".</div>
                 `;
                 container.innerHTML = html;
 
@@ -523,6 +530,7 @@
             }
 
             function renderProductEditors(products, parent) {
+                parent.innerHTML = ''; // Clear first
                 products.forEach(prod => {
                     appendProductEditor(prod, parent);
                 });
@@ -556,9 +564,15 @@
                 `;
                 parent.appendChild(editor);
 
+                // Delete button: immediate removal from storage and re-render
                 editor.querySelector('.delete-product').addEventListener('click', () => {
                     if (confirm("Ma hubtaa inaad tirtirto alaabtan?")) {
-                        editor.remove();
+                        const id = parseInt(editor.dataset.id);
+                        let products = loadProducts();
+                        products = products.filter(p => p.id !== id);
+                        saveProducts(products);
+                        // Re-render admin with updated products
+                        renderAdmin(products);
                     }
                 });
 
@@ -584,18 +598,9 @@
                 renderStorefront(products);
             }
 
-            // Handle back/forward (optional)
+            // Handle back/forward
             window.addEventListener('popstate', () => {
-                // re-run detection (but password won't be prompted again, so we just reload based on URL)
-                const newParams = new URLSearchParams(window.location.search);
-                const newIsAdmin = newParams.has('admin');
-                if (newIsAdmin) {
-                    // we need to prompt again? but we can't because this is a popstate event.
-                    // simpler: reload the page to trigger password prompt.
-                    window.location.reload();
-                } else {
-                    renderStorefront(loadProducts());
-                }
+                window.location.reload(); // simple reload to re-check admin param
             });
         })();
     </script>
