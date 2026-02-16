@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHUKRI ONLINE STORE</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #f9f5f2 0%, #efeae5 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1300px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 48px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255,255,255,0.6);
+            padding: 30px;
+            border: 1px solid rgba(255,255,240,0.5);
+        }
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px dashed #c9b6a5;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            background: linear-gradient(130deg, #2c3e50, #8e6b4f);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .admin-link {
+            background: #ffffffd6;
+            padding: 12px 28px;
+            border-radius: 60px;
+            color: #4a3729;
+            text-decoration: none;
+            font-weight: 500;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.05);
+            border: 1px solid #e2d9d0;
+            transition: 0.2s;
+            font-size: 1.1rem;
+            backdrop-filter: blur(4px);
+        }
+        .admin-link:hover {
+            background: white;
+            box-shadow: 0 12px 24px rgba(100,70,40,0.15);
+            border-color: #b3967a;
+        }
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin: 30px 0 40px;
+        }
+        .product-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border-radius: 32px;
+            padding: 24px 20px 20px;
+            box-shadow: 0 12px 28px -8px rgba(90, 60, 30, 0.2);
+            transition: transform 0.15s ease;
+            border: 1px solid #f0e4d8;
+            display: flex;
+            flex-direction: column;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            background: white;
+        }
+        .product-image {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 28px;
+            background: #f2e5d9;
+            margin-bottom: 16px;
+            border: 2px solid #fcf7f2;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .product-name {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #2d221c;
+            margin-bottom: 8px;
+        }
+        .price-block {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 10px 0 15px;
+        }
+        .original-price {
+            font-size: 1.1rem;
+            color: #928170;
+            text-decoration: line-through;
+        }
+        .discounted-price {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #9b5e2e;
+        }
+        .discount-badge {
+            background: #cdaa7b;
+            color: white;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 20px 0 10px;
+        }
+        .quantity-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 30px;
+            border: none;
+            background: #f1e3d9;
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: #4f3b2c;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: 0.1s;
+            line-height: 1;
+        }
+        .quantity-btn:active {
+            background: #d9c3b2;
+        }
+        .quantity-input {
+            width: 60px;
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 500;
+            border: 1px solid #dccfc4;
+            border-radius: 40px;
+            padding: 8px 0;
+            background: white;
+        }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            opacity: 0.5;
+        }
+        .total-section {
+            background: #f3ede7;
+            border-radius: 48px;
+            padding: 24px 32px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            margin: 30px 0 20px;
+            border: 1px solid #e0cfc0;
+        }
+        .total-label {
+            font-size: 2rem;
+            font-weight: 500;
+            color: #2f241e;
+        }
+        .total-amount {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #7b4f2b;
+        }
+        .whatsapp-btn {
+            background: #25D366;
+            border: none;
+            padding: 22px 58px;
+            border-radius: 80px;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 20px 30px -8px rgba(37, 211, 102, 0.3);
+            cursor: pointer;
+            transition: 0.15s;
+            border: 2px solid rgba(255,255,255,0.5);
+            width: fit-content;
+            margin: 10px auto 0;
+        }
+        .whatsapp-btn:hover {
+            background: #20b859;
+            transform: scale(1.02);
+        }
+        .whatsapp-btn:active {
+            background: #1a9e4b;
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 40px;
+            color: #7a685a;
+            font-size: 1rem;
+        }
+        /* admin panel styles */
+        .admin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+        .product-editor {
+            background: rgba(255, 245, 235, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 40px;
+            padding: 25px;
+            border: 1px solid #ebdad0;
+        }
+        .editor-title {
+            font-size: 1.7rem;
+            margin-bottom: 15px;
+            color: #4f3b2c;
+            border-left: 8px solid #b28054;
+            padding-left: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: 500;
+            color: #3f2e22;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        input, .file-input {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 30px;
+            border: 1px solid #d4bfb0;
+            background: white;
+            font-size: 1.1rem;
+            outline: none;
+        }
+        input:focus {
+            border-color: #b28054;
+            box-shadow: 0 0 0 3px rgba(178,128,84,0.2);
+        }
+        .image-preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 30px;
+            object-fit: cover;
+            border: 3px solid white;
+            margin-top: 15px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+            background: #e7d9cf;
+        }
+        .save-btn {
+            background: #8b6c51;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            padding: 16px 40px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: 0.15s;
+            border: 1px solid #dbbc9f;
+            margin-top: 20px;
+            align-self: flex-start;
+        }
+        .save-btn:hover {
+            background: #6f523b;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 30px;
+            color: #5e4433;
+            font-size: 1.2rem;
+            text-decoration: none;
+            border-bottom: 2px dotted;
+        }
+        .currency {
+            font-size: 1.2rem;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainContainer">
+        <!-- dynamic content injected by JavaScript -->
+    </div>
+    <script>
+        (function() {
+            // ---------- shared constants ----------
+            const STORAGE_KEY = 'shukri_products';
+            const WHATSAPP_NUMBER = '252614837293';
+            const DEFAULT_PRODUCTS = [
+                { id: 1, name: 'Qamdi (جلباب)', price: 45.00, discount: 20, image: '' },
+                { id: 2, name: 'Macawiis (معويس)', price: 30.00, discount: 0, image: '' },
+                { id: 3, name: 'Foox (بخور)', price: 18.50, discount: 15, image: '' }
+            ];
+
+            // ---------- helper: load/save products ----------
+            function loadProducts() {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    try {
+                        return JSON.parse(stored);
+                    } catch (e) {
+                        return DEFAULT_PRODUCTS;
+                    }
+                } else {
+                    // initialize with default
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
+                    return DEFAULT_PRODUCTS;
+                }
+            }
+
+            function saveProducts(products) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+            }
+
+            // ---------- determine which page we're on ----------
+            const isAdminPage = window.location.pathname.includes('admin.html') || window.location.search.includes('admin');
+
+            // ---------- RENDER STOREFRONT (index) ----------
+            function renderStorefront(products) {
+                const container = document.getElementById('mainContainer');
+                if (!container) return;
+
+                // Header
+                let html = `
+                    <header>
+                        <h1>🛍️ SHUKRI ONLINE STORE</h1>
+                        <a class="admin-link" href="?admin=true" onclick="event.preventDefault(); window.location.href=window.location.pathname + '?admin=true'">👤 Maamul</a>
+                    </header>
+                    <div class="product-grid" id="productGrid"></div>
+                    <div class="total-section">
+                        <span class="total-label">Wadarta guud:</span>
+                        <span class="total-amount" id="totalAmount">0.00$</span>
+                    </div>
+                    <button class="whatsapp-btn" id="whatsappBtn">
+                        <span>📲</span> Iibso WhatsApp
+                    </button>
+                    <div class="footer-note">👗 dhar & uunsiga | alkhamra</div>
+                `;
+                container.innerHTML = html;
+
+                const grid = document.getElementById('productGrid');
+                // render each product card
+                products.forEach((prod, index) => {
+                    const finalPrice = prod.discount > 0 ? (prod.price * (1 - prod.discount/100)).toFixed(2) : prod.price.toFixed(2);
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.dataset.id = prod.id;
+                    card.dataset.price = finalPrice;
+                    card.dataset.name = prod.name;
+                    card.innerHTML = `
+                        <img class="product-image" src="${prod.image || 'https://via.placeholder.com/300x300/f7ede4/9b7f69?text=Sawir+ma+jirto'}" alt="${prod.name}">
+                        <div class="product-name">${prod.name}</div>
+                        <div class="price-block">
+                            ${prod.discount > 0 ? `<span class="original-price">$${prod.price.toFixed(2)}</span>` : ''}
+                            <span class="discounted-price">$${finalPrice}</span>
+                            ${prod.discount > 0 ? `<span class="discount-badge">-${prod.discount}%</span>` : ''}
+                        </div>
+                        <div class="quantity-control">
+                            <button class="quantity-btn" data-action="decr">−</button>
+                            <input type="number" class="quantity-input" value="0" min="0" max="99" step="1" data-id="${prod.id}">
+                            <button class="quantity-btn" data-action="incr">+</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                // Attach quantity events
+                document.querySelectorAll('.quantity-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const card = e.target.closest('.product-card');
+                        const input = card.querySelector('.quantity-input');
+                        let val = parseInt(input.value) || 0;
+                        if (e.target.dataset.action === 'incr') val = Math.min(99, val + 1);
+                        else if (e.target.dataset.action === 'decr') val = Math.max(0, val - 1);
+                        input.value = val;
+                        updateTotal();
+                    });
+                });
+                document.querySelectorAll('.quantity-input').forEach(inp => {
+                    inp.addEventListener('input', updateTotal);
+                });
+
+                // Total update function
+                function updateTotal() {
+                    let total = 0;
+                    document.querySelectorAll('.product-card').forEach(card => {
+                        const qty = parseInt(card.querySelector('.quantity-input').value) || 0;
+                        const price = parseFloat(card.dataset.price);
+                        total += qty * price;
+                    });
+                    document.getElementById('totalAmount').innerText = total.toFixed(2) + '$';
+                }
+
+                // WhatsApp checkout
+                document.getElementById('whatsappBtn').addEventListener('click', () => {
+                    let message = "Salaan, waxaan dalbanay:\n";
+                    let total = 0;
+                    const items = [];
+                    document.querySelectorAll('.product-card').forEach(card => {
+                        const qty = parseInt(card.querySelector('.quantity-input').value) || 0;
+                        if (qty > 0) {
+                            const name = card.dataset.name;
+                            const price = parseFloat(card.dataset.price);
+                            const itemTotal = qty * price;
+                            total += itemTotal;
+                            items.push(`• ${qty} x ${name} = $${itemTotal.toFixed(2)}`);
+                        }
+                    });
+                    if (items.length === 0) {
+                        alert("Fadlan dooro ugu yaraan hal alaab.");
+                        return;
+                    }
+                    message += items.join('\n') + `\nWadarta: $${total.toFixed(2)}`;
+                    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+                    window.open(url, '_blank');
+                });
+
+                updateTotal(); // initial
+            }
+
+            // ---------- RENDER ADMIN PANEL (admin) ----------
+            function renderAdmin(products) {
+                const container = document.getElementById('mainContainer');
+                let html = `
+                    <a class="back-link" href=".">← Ku noqo store-ka</a>
+                    <h1 style="margin-bottom: 30px;">🛠️ Maamulka alaabta</h1>
+                    <div class="admin-form" id="adminForm"></div>
+                    <button class="save-btn" id="saveAdminBtn">💾 Kaydi isbedelada</button>
+                `;
+                container.innerHTML = html;
+
+                const formDiv = document.getElementById('adminForm');
+                // build editors for each product (we allow max 6 but keep 3)
+                products.forEach((prod, idx) => {
+                    const editor = document.createElement('div');
+                    editor.className = 'product-editor';
+                    editor.dataset.id = prod.id;
+                    editor.innerHTML = `
+                        <div class="editor-title">📦 Alaabta ${idx+1} (ID: ${prod.id})</div>
+                        <div class="form-group">
+                            <label>Magaca alaabta</label>
+                            <input type="text" class="prod-name" value="${prod.name.replace(/"/g, '&quot;')}">
+                        </div>
+                        <div class="form-group">
+                            <label>Qiimaha asalka ($)</label>
+                            <input type="number" step="0.01" min="0" class="prod-price" value="${prod.price}">
+                        </div>
+                        <div class="form-group">
+                            <label>Dheero % (0 ilaa 100)</label>
+                            <input type="number" min="0" max="100" step="1" class="prod-discount" value="${prod.discount}">
+                        </div>
+                        <div class="form-group">
+                            <label>Sawir (ka soo qaad telefoonka)</label>
+                            <input type="file" accept="image/*" class="prod-image-file" data-id="${prod.id}">
+                            <img class="image-preview" src="${prod.image || 'https://via.placeholder.com/150/f7ede4/9b7f69?text=sawir'}" id="preview-${prod.id}">
+                        </div>
+                    `;
+                    formDiv.appendChild(editor);
+
+                    // image preview on file select
+                    const fileInput = editor.querySelector('.prod-image-file');
+                    const previewImg = editor.querySelector(`.image-preview`);
+                    fileInput.addEventListener('change', function(event) {
+                        const file = event.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                previewImg.src = e.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                });
+
+                // Save button
+                document.getElementById('saveAdminBtn').addEventListener('click', () => {
+                    const updated = [];
+                    const editors = document.querySelectorAll('.product-editor');
+                    editors.forEach(editor => {
+                        const id = parseInt(editor.dataset.id);
+                        const name = editor.querySelector('.prod-name').value.trim();
+                        const price = parseFloat(editor.querySelector('.prod-price').value) || 0;
+                        const discount = parseInt(editor.querySelector('.prod-discount').value) || 0;
+                        const previewImg = editor.querySelector('.image-preview');
+                        let image = previewImg.src; // base64 or placeholder
+
+                        // if image is placeholder or empty, keep old one? We'll keep new base64 if uploaded
+                        // check if file input has a new file, image already updated in preview
+                        // but we also need to handle if no new file, keep existing (already in preview from old base64)
+                        // The preview might contain old base64 if not changed, that's fine.
+                        // We'll just take preview.src (it's either old base64 or newly loaded base64)
+                        // But for placeholder we might want to avoid saving external URL? 
+                        // if image starts with https? we ignore, but we can keep old saved image from localStorage
+                        // we'll trust that preview holds correct data.
+                        // However initial preview from default products may be placeholder.
+                        // We'll treat placeholder as empty and later we will not overwrite with placeholder.
+                        // To avoid losing image, we need to pass previous image if none uploaded.
+                        // Approach: if there is a file input change, preview is updated. else preview shows old image.
+                        // so we can just use preview.src
+                        // But preview.src might be placeholder for default. We want to keep old image if present.
+                        // We'll load old product before save and if preview.src is placeholder and old had image, use old.
+                        // simpler: we use preview.src, but if it's the placeholder and old image exists, we lose it.
+                        // Instead, we'll check if a new file was selected by looking at fileInput.files length.
+                        // If no new file, keep the original image from products array.
+                        let finalImage = image;
+                        if (fileInput.files.length === 0) {
+                            // keep original image from current products (passed as argument)
+                            const oldProd = products.find(p => p.id === id);
+                            if (oldProd && oldProd.image) finalImage = oldProd.image;
+                        }
+                        // if finalImage still is placeholder and there is old image? but we covered.
+                        updated.push({
+                            id: id,
+                            name: name || `Alaab ${id}`,
+                            price: price,
+                            discount: discount,
+                            image: finalImage.startsWith('http') ? '' : finalImage // don't store external placeholder
+                        });
+                    });
+                    saveProducts(updated);
+                    alert("✅ Alaabta waa la kaydiyay! Ku noqo store-ka");
+                });
+            }
+
+            // ---------- INITIALIZE based on URL ----------
+            const products = loadProducts();
+            const isAdmin = window.location.pathname.includes('admin.html') || window.location.search.includes('admin');
+            if (isAdmin) {
+                renderAdmin(products);
+            } else {
+                renderStorefront(products);
+            }
+
+            // also handle simple navigation without reload for admin param
+            window.addEventListener('popstate', () => {
+                // re-run detection
+                const nowAdmin = window.location.pathname.includes('admin.html') || window.location.search.includes('admin');
+                if (nowAdmin) renderAdmin(loadProducts());
+                else renderStorefront(loadProducts());
+            });
+        })();
+    </script>
+    <!-- small extra style for file input -->
+    <style>
+        .file-input { background: #fcf7f2; padding: 10px; }
+        .product-editor { background: rgba(253, 246, 239, 0.8); }
+        @media (max-width: 600px) {
+            h1 { font-size: 1.9rem; }
+            .total-amount { font-size: 2rem; }
+            .whatsapp-btn { font-size: 1.4rem; padding: 18px 30px; }
+        }
+    </style>
+</body>
+</html>
