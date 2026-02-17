@@ -273,7 +273,7 @@
             box-shadow: 0 8px 18px rgba(0,0,0,0.1);
             background: #e7d9cf;
         }
-        .save-btn, .add-btn, .reset-btn {
+        .save-btn, .add-btn, .clear-btn {
             background: #8b6c51;
             border: none;
             color: white;
@@ -289,10 +289,8 @@
         }
         .add-btn {
             background: #5f8b6f;
-            margin-top: 10px;
-            align-self: center;
         }
-        .reset-btn {
+        .clear-btn {
             background: #a05858;
         }
         .add-btn:hover {
@@ -301,7 +299,7 @@
         .save-btn:hover {
             background: #6f523b;
         }
-        .reset-btn:hover {
+        .clear-btn:hover {
             background: #7e4242;
         }
         .back-link {
@@ -340,7 +338,7 @@
 </head>
 <body>
     <div class="container" id="mainContainer">
-        <!-- dynamic content injected by JavaScript -->
+        <!-- content injected by JavaScript -->
     </div>
     <script>
         (function() {
@@ -348,39 +346,26 @@
             const STORAGE_KEY = 'shukri_products';
             const WHATSAPP_NUMBER = '252614837293';
             const ADMIN_PASSWORD = 'iphone326355';
-            const DEFAULT_PRODUCTS = [
-                { id: 1, name: 'Qamdi (جلباب)', price: 45.00, discount: 20, image: '' },
-                { id: 2, name: 'Macawiis (معويس)', price: 30.00, discount: 0, image: '' },
-                { id: 3, name: 'Foox (بخور)', price: 18.50, discount: 15, image: '' }
-            ];
+            const DEFAULT_PRODUCTS = []; // لا توجد منتجات افتراضية إطلاقاً
 
-            // Load products: if stored data exists, return it; if stored is null, set defaults and return them.
             function loadProducts() {
                 const stored = localStorage.getItem(STORAGE_KEY);
                 if (stored !== null) {
                     try {
                         return JSON.parse(stored);
                     } catch (e) {
-                        // If corrupted, reset to defaults
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
-                        return DEFAULT_PRODUCTS;
+                        // إذا كان المخزون فاسداً، نبدأ بمصفوفة فارغة
+                        return [];
                     }
                 } else {
-                    // No stored data at all (first visit)
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PRODUCTS));
-                    return DEFAULT_PRODUCTS;
+                    // أول مرة: تخزين مصفوفة فارغة
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+                    return [];
                 }
             }
 
             function saveProducts(products) {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-                console.log('Saved:', products);
-            }
-
-            // Reset to default products
-            function resetToDefault() {
-                saveProducts(DEFAULT_PRODUCTS);
-                return DEFAULT_PRODUCTS;
             }
 
             // ---------- detect admin mode ----------
@@ -449,6 +434,7 @@
                 document.querySelectorAll('.quantity-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         const card = e.target.closest('.product-card');
+                        if (!card) return;
                         const input = card.querySelector('.quantity-input');
                         let val = parseInt(input.value) || 0;
                         if (e.target.dataset.action === 'incr') val = Math.min(99, val + 1);
@@ -507,7 +493,7 @@
                     <div class="button-group">
                         <button class="add-btn" id="addProductBtn">➕ Ku dar alaab cusub</button>
                         <button class="save-btn" id="saveAdminBtn">💾 Kaydi isbedelada</button>
-                        <button class="reset-btn" id="resetDefaultBtn">🔄 Ku celi alaabtii hore</button>
+                        <button class="clear-btn" id="clearAllBtn">🧹 Masax dhammaan</button>
                     </div>
                     <div class="note">⚠️ Fadlan: markaad tirtirto, isbedeladu waa isla markiiba kaydsamaan. Markaad ku darto ama aad beddesho, guji "Kaydi isbedelada".</div>
                 `;
@@ -541,12 +527,8 @@
                         const oldImage = editor.dataset.oldImage || '';
                         let finalImage = previewImg.src;
                         if (fileInput.files.length === 0) {
-                            // No new file: keep old image
                             if (oldImage) finalImage = oldImage;
-                        } else {
-                            // New file selected: preview already updated to dataURL, we keep that
                         }
-                        // If finalImage is external placeholder (http), set to empty to avoid storing URL
                         if (finalImage.startsWith('http') && !finalImage.startsWith('data:')) {
                             finalImage = '';
                         }
@@ -559,7 +541,6 @@
                         });
                     });
                     saveProducts(updatedProducts);
-                    // Show success message
                     const msgDiv = document.createElement('div');
                     msgDiv.className = 'success-msg';
                     msgDiv.innerText = '✅ Alaabta waa la kaydiyay!';
@@ -567,10 +548,10 @@
                     setTimeout(() => msgDiv.remove(), 3000);
                 });
 
-                document.getElementById('resetDefaultBtn').addEventListener('click', () => {
-                    if (confirm("Ma hubtaa inaad ku celiso alaabtii hore? waxaad tirtirtay waa lumi doonaa.")) {
-                        const defaultProducts = resetToDefault();
-                        renderAdmin(defaultProducts);
+                document.getElementById('clearAllBtn').addEventListener('click', () => {
+                    if (confirm("Ma hubtaa inaad masaxdo dhammaan alaabta?") && confirm("Hubi: dhammaan alaabta waa la tirtiri doonaa.")) {
+                        saveProducts([]);
+                        renderAdmin([]);
                     }
                 });
             }
@@ -614,14 +595,12 @@
                 `;
                 parent.appendChild(editor);
 
-                // Delete button: immediate removal from storage and re-render
                 editor.querySelector('.delete-product').addEventListener('click', () => {
                     if (confirm("Ma hubtaa inaad tirtirto alaabtan?")) {
                         const id = parseInt(editor.dataset.id);
                         let products = loadProducts();
                         products = products.filter(p => p.id !== id);
                         saveProducts(products);
-                        // Re-render admin with updated products
                         renderAdmin(products);
                     }
                 });
@@ -648,21 +627,10 @@
                 renderStorefront(products);
             }
 
-            // Handle back/forward
             window.addEventListener('popstate', () => {
                 window.location.reload();
             });
         })();
     </script>
-    <!-- small extra style -->
-    <style>
-        .file-input { background: #fcf7f2; padding: 10px; }
-        .product-editor { background: rgba(253, 246, 239, 0.8); }
-        @media (max-width: 600px) {
-            h1 { font-size: 1.9rem; }
-            .total-amount { font-size: 2rem; }
-            .whatsapp-btn { font-size: 1.4rem; padding: 18px 30px; }
-        }
-    </style>
 </body>
 </html>
