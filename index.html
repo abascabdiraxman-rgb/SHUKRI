@@ -346,19 +346,17 @@
             const STORAGE_KEY = 'shukri_products';
             const WHATSAPP_NUMBER = '252614837293';
             const ADMIN_PASSWORD = 'iphone326355';
-            const DEFAULT_PRODUCTS = []; // لا توجد منتجات افتراضية إطلاقاً
 
+            // Load products: if stored data exists, return it; otherwise empty array.
             function loadProducts() {
                 const stored = localStorage.getItem(STORAGE_KEY);
                 if (stored !== null) {
                     try {
                         return JSON.parse(stored);
                     } catch (e) {
-                        // إذا كان المخزون فاسداً، نبدأ بمصفوفة فارغة
                         return [];
                     }
                 } else {
-                    // أول مرة: تخزين مصفوفة فارغة
                     localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
                     return [];
                 }
@@ -493,7 +491,7 @@
                     <div class="button-group">
                         <button class="add-btn" id="addProductBtn">➕ Ku dar alaab cusub</button>
                         <button class="save-btn" id="saveAdminBtn">💾 Kaydi isbedelada</button>
-                        <button class="clear-btn" id="clearAllBtn">🧹 Masax dhammaan</button>
+                        <button class="clear-btn" id="clearAllBtn">🧹 Tirtir dhammaan</button>
                     </div>
                     <div class="note">⚠️ Fadlan: markaad tirtirto, isbedeladu waa isla markiiba kaydsamaan. Markaad ku darto ama aad beddesho, guji "Kaydi isbedelada".</div>
                 `;
@@ -549,7 +547,7 @@
                 });
 
                 document.getElementById('clearAllBtn').addEventListener('click', () => {
-                    if (confirm("Ma hubtaa inaad masaxdo dhammaan alaabta?") && confirm("Hubi: dhammaan alaabta waa la tirtiri doonaa.")) {
+                    if (confirm("Ma hubtaa inaad tirtirto dhammaan alaabta?")) {
                         saveProducts([]);
                         renderAdmin([]);
                     }
